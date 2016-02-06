@@ -3,8 +3,8 @@ import cc.arduino.*;
 import controlP5.*;
 ControlP5 controlP5;
 Arduino arduino;
-int armAngle= 0;
-int baseAngle = 0;
+int gripperAngle= 0;
+int wristAngle = 0;
 void setup() {
   size(1000,600);
   println(Arduino.list());
@@ -15,12 +15,12 @@ void setup() {
 
   //I actually hate how this is handled. For some reason, it won't take an object, only a string
   //It works though
-  controlP5.addSlider("armAngle",0,130,armAngle,20,10,800,200);
-  controlP5.addSlider("baseAngle",0,180,baseAngle,20,300,800,200);
+  controlP5.addSlider("gripperAngle",0,130,armAngle,20,10,800,200);
+  controlP5.addSlider("wristAngle",0,180,baseAngle,20,300,800,200);
 }
 
 void draw() {
-  arduino.analogWrite(8, armAngle);
-  arduino.analogWrite(12, baseAngle);
+  arduino.analogWrite(8, wristAngle);
+  arduino.analogWrite(12, gripperAngle);
   //delay(15);
 }
