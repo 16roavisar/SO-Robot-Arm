@@ -1,28 +1,97 @@
 import processing.serial.*;
 import cc.arduino.*;
 import controlP5.*;
+
 ControlP5 controlP5;
+
 Arduino arduino;
+
+int gripperPin;
+int wristPin;
+int basePin;
+
+int gripperAngle= 0;
+int wristAngle = 0;
+int baseAngle = 0;
+
+int X_STEP_PIN         54;
+int X_DIR_PIN          55;
+int X_ENABLE_PIN       38;
+int X_MIN_PIN           3;
+int X_MAX_PIN           2;
+int Y_STEP_PIN         60;
+int Y_DIR_PIN          61;
+int Y_ENABLE_PIN       56;
+int Y_MIN_PIN          14;
+int Y_MAX_PIN          15'
+
 int stepperSpeed= 0;
+int stepperSpeed1= 0;
+
 String stepperDirection;
 void setup() {
+  
   size(1000,600);
+  
   println(Arduino.list());
-  arduino = new Arduino(this, Arduino.list()[1], 57600); //the number in brackets is the array location of the active serial ports listed in the view below. the first one is Zero, and it counts up from there. 
+  //the number in brackets is the array location of the active serial ports listed in the view below. the first one is Zero, and it counts up from there. 
+  arduino = new Arduino(this, Arduino.list()[2], 1000000);  
+  
+  arduino.pinMode(gripperPin  , Arduino.OUTPUT);
+  arduino.pinMode(wristPin  , Arduino.OUTPUT);
+  arduino.pinMode(basePin  , Arduino.OUTPUT);
+  
+  arduino.pinMode(X_STEP_PIN  , Arduino.OUTPUT);
+  arduino.pinMode(X_DIR_PIN    , Arduino.OUTPUT);
+  arduino.pinMode(X_ENABLE_PIN    , Arduino.OUTPUT);
+  arduino.pinMode(Y_STEP_PIN  , Arduino.OUTPUT);
+  arduino.pinMode(Y_DIR_PIN    , Arduino.OUTPUT);
+  arduino.pinMode(Y_ENABLE_PIN    , Arduino.OUTPUT);
+  arduino.pinMode(X_MIN_PIN   , Arduino.INPUT_PULLUP);
+  arduino.pinMode(X_MAX_PIN   ,  Arduino.INPUT_PULLUP);
+  arduino.pinMode(Y_MIN_PIN   ,  Arduino.INPUT_PULLUP);
+  arduino.pinMode(Y_MAX_PIN   ,  Arduino.INPUT_PULLUP);
+  
+  arduino.digitalWrite(X_ENABLE_PIN    , LOW);
+  arduino.digitalWrite(Y_ENABLE_PIN    , LOW);
   
   controlP5 = new ControlP5(this);
 
   //I actually hate how this is handled. For some reason, it won't take an object, only a string
   //It works though
-  controlP5.addSlider("stepperSpeed",0,130,stepperSpeed,20,10,800,200);
+  controlP5.addSlider("stepper 1",-100,100,stepperSpeed,20,10,800,100);
+  controlP5.addSlider("stepper 2",-100,100,stepperSpeed1,20,120,800,100);
   
-  String myPort = Serial.list()[0]; //change the 0 to a 1 or 2 etc. to match your port
-  myPort = new Serial(this, portName, 9600); 
+  controlP5.addSlider("gripper servo",0,180,gripperngle,20,230,800,200);
+  controlP5.addSlider("wrist servo",0,180,wristAngle,20, 340,800,200);
+  controlP5.addSlider("base servo",0,180,baseAngle,20,450,800,200);
+
 }
 
 void draw() {
+  arduino.analogWrite(wristPin, wristAngle);
+  arduino.analogWrite(gripperPin, gripperAngle);
+  arduino.analogWrite(basePin, baseAngle);
   
-  if(myPort.available()>0){
-      println(stepperControl);
+   while(stepperSpeed<0) {
+    arduino.digitalWrite(X_DIR_PIN, Arduino.HIGH);
+    arduino.digitalWrite(X_STEP_PIN, Arduino.HIGH); //HIGH followed by LOW = 1 step
+    arduino.digitalWrite(Y_STEP_PIN, Arduino.HIGH);
+    
+    delay((stepperSpeed*(-1)));               // Set Speed (Lower = Faster)
+  
+    arduino.digitalWrite(X_STEP_PIN, Arduino.LOW);
+    arduino.digitalWrite(Y_STEP_PIN, Arduino.LOW);
   }
+
+  while (stepperSpeed>0) {
+    arduino.digitalWrite(X_DIR_PIN, Arduino.LOW);
+    arduino.digitalWrite(X_STEP_PIN, Arduino.HIGH); //HIGH followed by LOW = 1 step
+    arduino.digitalWrite(Y_STEP_PIN, Arduino.HIGH);
+    
+    delay(stepperSpeed);               // Set Speed (Lower = Faster)
+    
+    arduino.digitalWrite(X_STEP_PIN, Arduino.LOW);
+    arduino.digitalWrite(Y_STEP_PIN, Arduino.LOW);
+   }
 }
