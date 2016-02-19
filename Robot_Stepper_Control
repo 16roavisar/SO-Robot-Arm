@@ -35,7 +35,7 @@ void setup() {
   
   println(Arduino.list());
   //the number in brackets is the array location of the active serial ports listed in the view below. the first one is Zero, and it counts up from there. 
-  arduino = new Arduino(this, Arduino.list()[2], 1000000);  
+  arduino = new Arduino(this, Arduino.list()[1], 57600);  
   
   arduino.pinMode(gripperPin  , Arduino.OUTPUT);
   arduino.pinMode(wristPin  , Arduino.OUTPUT);
